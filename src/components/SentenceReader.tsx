@@ -93,7 +93,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 my-4">
       {/* Workbook Page Container */}
-      <section 
+      <section
         className="workbook-card p-6 sm:p-10 relative overflow-hidden transition-all"
         aria-label="Sentence Practice Card"
       >
@@ -112,20 +112,19 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
             </span>
           </div>
 
-          {/* Voice Controls: Speed (1.0x / 0.8x) & Voice (Shivani / Avinash) */}
+          {/* Voice Controls: Speed (1.0x / 0.85x) & Voice (Shivani / Avinash) */}
           <div className="flex items-center gap-2 text-xs">
             {/* Speed toggle */}
             <button
               type="button"
-              onClick={() => setPlaybackSpeed(prev => prev === 1.0 ? 0.8 : 1.0)}
-              className={`px-2 py-1 rounded-md border font-bold flex items-center gap-1 transition-all ${
-                playbackSpeed === 0.8 
-                  ? 'bg-tealbrand-100 border-tealbrand-500 text-tealbrand-800' 
+              onClick={() => setPlaybackSpeed(prev => prev === 1.0 ? 0.85 : 1.0)}
+              className={`px-2 py-1 rounded-md border font-bold flex items-center gap-1 transition-all ${playbackSpeed === 0.85
+                  ? 'bg-tealbrand-100 border-tealbrand-500 text-tealbrand-800'
                   : 'bg-white border-paper-300 text-ink-600 hover:bg-paper-100'
-              }`}
+                }`}
               title="Toggle Slow Pronunciation Speed"
             >
-              <span>{playbackSpeed === 0.8 ? '🐢 0.8x (Slow)' : '⚡ 1.0x'}</span>
+              <span>{playbackSpeed === 0.85 ? '🐢 0.85x (Slow)' : '⚡ 1.0x'}</span>
             </button>
 
             {/* Voice toggle */}
@@ -155,11 +154,10 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                   onClick={() => handleWordTap(word, idx)}
                   disabled={isRecording}
                   title={isTricky ? `Tricky practice word: "${word}". Click to hear or open Word Clinic.` : `Hear "${word}"`}
-                  className={`group relative inline-block transition-all transform duration-150 rounded-xl px-2 py-1 text-left focus:outline-none focus:ring-4 focus:ring-tealbrand-500/40 ${
-                    isActive
+                  className={`group relative inline-block transition-all transform duration-150 rounded-xl px-2 py-1 text-left focus:outline-none focus:ring-4 focus:ring-tealbrand-500/40 ${isActive
                       ? 'bg-tealbrand-100 text-tealbrand-800 scale-105 shadow-sm'
                       : 'hover:bg-paper-200 hover:text-tealbrand-700 active:scale-95'
-                  }`}
+                    }`}
                   aria-label={`Listen to word: ${word}`}
                 >
                   <span className={isTricky ? 'hand-drawn-underline text-tealbrand-800 font-black' : ''}>

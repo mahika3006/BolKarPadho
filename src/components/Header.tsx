@@ -1,7 +1,7 @@
 import React from 'react';
 import { CoachingLanguage, GnaniStatus, Lesson } from '../types';
 import { GNANI_LANGUAGES, UI_TRANSLATIONS } from '../data/translations';
-import { Sparkles, Bookmark, Languages, Volume2, Globe, ChevronDown } from 'lucide-react';
+import { Sparkles, Bookmark, Languages, Volume2, Globe, Dices, PlusCircle } from 'lucide-react';
 
 interface HeaderProps {
   coachingLang: CoachingLanguage;
@@ -9,6 +9,8 @@ interface HeaderProps {
   currentLesson: Lesson;
   allLessons: Lesson[];
   onSelectLesson: (lesson: Lesson) => void;
+  onOpenCustomModal: () => void;
+  onRollRandom: () => void;
   gnaniStatus: GnaniStatus;
   bookmarkedWords: string[];
   onOpenBookmarks: () => void;
@@ -20,12 +22,14 @@ export const Header: React.FC<HeaderProps> = ({
   currentLesson,
   allLessons,
   onSelectLesson,
+  onOpenCustomModal,
+  onRollRandom,
   gnaniStatus,
   bookmarkedWords,
   onOpenBookmarks
 }) => {
   const strings = UI_TRANSLATIONS[coachingLang] || UI_TRANSLATIONS.en;
-  const englishLessons = allLessons.filter(l => l.languageCode === 'en-IN');
+  const englishLessons = allLessons.filter(l => l.languageCode === 'en-IN' && !l.isCustom);
   const regionalLessons = allLessons.filter(l => l.languageCode !== 'en-IN');
 
   return (
@@ -51,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Right Controls: Provider badge, ALL 11 Gnani Languages switcher, Bookmarks */}
+        {/* Right Controls: Provider badge, ALL 11 Gnani Languages switcher, Custom Infinite, Bookmarks */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Gnani Voice AI Provider Indicator */}
           <div 
@@ -60,7 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <span className={`w-2 h-2 rounded-full ${gnaniStatus.gnaniConfigured ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
             <span className="hidden md:inline">
-              {gnaniStatus.gnaniConfigured ? 'Gnani Timbre AI (11 Langs)' : 'Browser Web Speech'}
+              {gnaniStatus.gnaniConfigured ? 'Gnani Timbre AI' : 'Browser Web Speech'}
             </span>
             <span className="md:hidden">
               {gnaniStatus.gnaniConfigured ? 'Gnani AI' : 'Web Speech'}
@@ -100,13 +104,13 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* ALL GNANI LANGUAGES PRACTICE LESSONS RIBBON */}
+      {/* ALL GNANI LANGUAGES PRACTICE LESSONS & INFINITE GENERATOR RIBBON */}
       <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
         {/* Core English Lessons */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
           <span className="text-ink-600 font-bold shrink-0 flex items-center gap-1">
             <span>📖</span>
-            <span>English:</span>
+            <span>Lessons:</span>
           </span>
           {englishLessons.map((lesson, idx) => {
             const isSelected = lesson.id === currentLesson.id;
@@ -124,13 +128,33 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             );
           })}
+
+          {/* Infinite Vocabulary / Custom Sentence Trigger */}
+          <button
+            onClick={onOpenCustomModal}
+            className="btn-tactile-paper px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100 flex items-center gap-1 shadow-2xs"
+            title="Type or paste any sentence from your textbook for infinite practice"
+          >
+            <PlusCircle className="w-3.5 h-3.5 text-amber-600" />
+            <span>♾️ Custom / Infinite</span>
+          </button>
+
+          {/* Random Roll Button */}
+          <button
+            onClick={onRollRandom}
+            className="btn-tactile-paper px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap bg-white border-paper-300 text-ink-800 hover:bg-paper-100 flex items-center gap-1"
+            title="Generate a fresh new sentence"
+          >
+            <Dices className="w-3.5 h-3.5 text-tealbrand-600" />
+            <span>🎲 New</span>
+          </button>
         </div>
 
         {/* All 10 Indian Regional Languages Selector */}
         <div className="flex items-center gap-1.5 shrink-0">
           <span className="text-ink-600 font-semibold flex items-center gap-1">
             <Globe className="w-3.5 h-3.5 text-tealbrand-600" />
-            <span className="font-bold">All 11 Gnani Languages:</span>
+            <span className="font-bold">All 11 Languages:</span>
           </span>
           <select
             value={currentLesson.id}
@@ -141,13 +165,20 @@ export const Header: React.FC<HeaderProps> = ({
             className="bg-white border-2 border-paper-300 rounded-lg px-2 py-1 text-xs font-bold text-ink-800 cursor-pointer shadow-xs focus:ring-2 focus:ring-tealbrand-500"
             aria-label="Select from all Indian regional languages available in Gnani APIs"
           >
-            <optgroup label="Classroom English (3 Lessons)">
+            <optgroup label="Classroom English">
               {englishLessons.map(l => (
                 <option key={l.id} value={l.id}>
                   English: "{l.trickyWord}"
                 </option>
               ))}
             </optgroup>
+            {currentLesson.isCustom && (
+              <optgroup label="Current Custom Practice">
+                <option value={currentLesson.id}>
+                  Custom: "{currentLesson.trickyWord}"
+                </option>
+              </optgroup>
+            )}
             <optgroup label="All Gnani Regional Languages (10 Languages)">
               {regionalLessons.map(l => (
                 <option key={l.id} value={l.id}>

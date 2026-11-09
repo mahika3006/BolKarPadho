@@ -14,7 +14,9 @@ import {
   Lightbulb,
   Layers,
   SplitSquareVertical,
-  Globe
+  Globe,
+  Gauge,
+  Award
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -53,6 +55,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
   const strings = UI_TRANSLATIONS[coachingLang] || UI_TRANSLATIONS.en;
   const clinic = lesson.clinic;
   const isMatch = alignment?.isExactMatch;
+  const score = alignment?.score ?? 0;
 
   // Trigger celebratory confetti once on exact match
   React.useEffect(() => {
@@ -75,6 +78,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
       textToSpeak,
       lesson.languageCode,
       'Shivani',
+      1.0,
       () => setPlayingItem(id),
       () => setPlayingItem(null)
     );
@@ -102,6 +106,42 @@ export const WordClinic: React.FC<WordClinicProps> = ({
   const localizedExplanation = 
     clinic.explanations?.[coachingLang] || 
     (coachingLang === 'hi' ? clinic.explanationHi : clinic.explanationEn);
+
+  // Score tier color and label
+  const getScoreBadge = (sc: number) => {
+    if (sc >= 95) {
+      return {
+        label: coachingLang === 'hi' ? 'उत्कृष्ट (Spot-on)' : 'Spot-on Pronunciation',
+        color: 'text-emerald-800 bg-emerald-100 border-emerald-300',
+        ringColor: 'stroke-emerald-600',
+        icon: '🌟'
+      };
+    }
+    if (sc >= 80) {
+      return {
+        label: coachingLang === 'hi' ? 'बहुत नज़दीक (Very Close)' : 'Very Close',
+        color: 'text-tealbrand-800 bg-tealbrand-100 border-tealbrand-300',
+        ringColor: 'stroke-tealbrand-600',
+        icon: '🌿'
+      };
+    }
+    if (sc >= 60) {
+      return {
+        label: coachingLang === 'hi' ? 'प्रगति पर (Getting There)' : 'Getting There',
+        color: 'text-amber-800 bg-amber-100 border-amber-300',
+        ringColor: 'stroke-amber-500',
+        icon: '🌱'
+      };
+    }
+    return {
+      label: coachingLang === 'hi' ? 'अभ्यास करें (Keep Practising)' : 'Keep Practising',
+      color: 'text-coral-800 bg-rose-100 border-rose-300',
+      ringColor: 'stroke-coral-500',
+      icon: '🔍'
+    };
+  };
+
+  const badge = getScoreBadge(score);
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 mb-12">
@@ -155,6 +195,78 @@ export const WordClinic: React.FC<WordClinicProps> = ({
             )}
           </button>
         </div>
+
+        {/* PRONUNCIATION ACCURACY SCORE CARD */}
+        {transcript && alignment && (
+          <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-white border-2 border-paper-300 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                {/* Circular Score Gauge */}
+                <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
+                  <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
+                    <path
+                      className="text-paper-300 stroke-current"
+                      strokeWidth="3.5"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                    <path
+                      className={`${badge.ringColor} stroke-current transition-all duration-700 ease-out`}
+                      strokeDasharray={`${score}, 100`}
+                      strokeLinecap="round"
+                      strokeWidth="3.5"
+                      fill="none"
+                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                    />
+                  </svg>
+                  <span className="absolute text-sm font-black text-ink-900 font-mono">
+                    {score}%
+                  </span>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs uppercase font-extrabold tracking-wider text-ink-500">
+                      Pronunciation Nearness Score
+                    </span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-extrabold border ${badge.color}`}>
+                      {badge.icon} {badge.label}
+                    </span>
+                  </div>
+                  <p className="text-xs text-ink-600 mt-1 font-medium">
+                    {coachingLang === 'hi' 
+                      ? 'यह स्कोर वास्तविक ध्वनि व अक्षरों की समीपता (Phonetic proximity) को दर्शाता है।'
+                      : 'Shows how closely your spoken syllables and acoustic sequence matched the target sentence.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Word Nearness Breakdown Pills */}
+              <div className="w-full sm:w-auto flex flex-wrap gap-1.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-paper-200">
+                {alignment.alignedWords.map((w, idx) => {
+                  const simPct = Math.round((w.similarity || (w.status === 'matched' ? 1 : 0)) * 100);
+                  const isLow = simPct < 80;
+                  return (
+                    <span
+                      key={idx}
+                      className={`text-[11px] font-bold px-2 py-1 rounded-lg border flex items-center gap-1 ${
+                        w.status === 'matched'
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                          : isLow
+                          ? 'bg-amber-100 text-amber-900 border-amber-300'
+                          : 'bg-paper-100 text-ink-700 border-paper-300'
+                      }`}
+                      title={w.spokenWord ? `Spoken: "${w.spokenWord}" (${simPct}% near)` : 'Word missed'}
+                    >
+                      <span>{w.targetWord || w.spokenWord}</span>
+                      <span className="text-[10px] opacity-75 font-mono">{simPct}%</span>
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 1. "WHAT I HEARD" & ALIGNMENT BANNER */}
         <div className="mb-6 p-4 rounded-2xl bg-white border-2 border-paper-200 shadow-sm">

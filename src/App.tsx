@@ -4,10 +4,12 @@ import { Lesson, CoachingLanguage, GnaniStatus } from './types';
 import { alignTranscripts } from './utils/alignment';
 import { checkGnaniStatus } from './services/speech';
 import { useAudioRecorder } from './hooks/useAudioRecorder';
+import { getRandomGeneratedLesson } from './services/sentenceGenerator';
 import { Header } from './components/Header';
 import { SentenceReader } from './components/SentenceReader';
 import { WordClinic } from './components/WordClinic';
 import { BookmarksModal } from './components/BookmarksModal';
+import { CustomSentenceModal } from './components/CustomSentenceModal';
 import { DemoToolbar } from './components/DemoToolbar';
 
 const VALID_COACHING_LANGS: CoachingLanguage[] = [
@@ -17,7 +19,7 @@ const VALID_COACHING_LANGS: CoachingLanguage[] = [
 export function App() {
   // Lessons
   const [currentLesson, setCurrentLesson] = useState<Lesson>(LESSONS[0]);
-
+  
   // Coaching language (ALL 11 Gnani Indian languages supported)
   const [coachingLang, setCoachingLang] = useState<CoachingLanguage>(() => {
     const saved = localStorage.getItem('bolkar_coaching_lang') as CoachingLanguage;
@@ -44,9 +46,10 @@ export function App() {
     }
   });
 
-  // Word Clinic state
+  // Modals & Clinic state
   const [isClinicOpen, setIsClinicOpen] = useState<boolean>(true); // Start visible for immediate discovery
   const [isBookmarksOpen, setIsBookmarksOpen] = useState<boolean>(false);
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState<boolean>(false);
 
   // Gnani AI backend integration status
   const [gnaniStatus, setGnaniStatus] = useState<GnaniStatus>({
@@ -94,7 +97,7 @@ export function App() {
     localStorage.setItem('bolkar_completed_lessons', JSON.stringify(completedLessons));
   }, [completedLessons]);
 
-  // Compute word alignment whenever transcript changes
+  // Compute word alignment & nearness score whenever transcript changes
   const alignment = useMemo(() => {
     if (!transcript.trim()) return null;
     return alignTranscripts(currentLesson.sentence, transcript);
@@ -111,7 +114,6 @@ export function App() {
   const handleStopRecording = async () => {
     await stopRecording();
     setIsClinicOpen(true);
-    // Smooth scroll to clinic after recording
     setTimeout(() => {
       clinicRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }, 150);
@@ -131,7 +133,7 @@ export function App() {
 
   const handleToggleBookmark = (word: string) => {
     const lower = word.toLowerCase();
-    setBookmarkedWords(prev =>
+    setBookmarkedWords(prev => 
       prev.includes(lower) ? prev.filter(w => w !== lower) : [...prev, lower]
     );
   };
@@ -146,6 +148,12 @@ export function App() {
     const currentIndex = LESSONS.findIndex(l => l.id === currentLesson.id);
     const nextIndex = (currentIndex + 1) % LESSONS.length;
     handleSelectLesson(LESSONS[nextIndex]);
+  };
+
+  // Roll an infinite random sentence
+  const handleRollRandom = () => {
+    const randomLesson = getRandomGeneratedLesson();
+    handleSelectLesson(randomLesson);
   };
 
   // Quick simulation helper for presentation / evaluation
@@ -167,6 +175,8 @@ export function App() {
           currentLesson={currentLesson}
           allLessons={LESSONS}
           onSelectLesson={handleSelectLesson}
+          onOpenCustomModal={() => setIsCustomModalOpen(true)}
+          onRollRandom={handleRollRandom}
           gnaniStatus={gnaniStatus}
           bookmarkedWords={bookmarkedWords}
           onOpenBookmarks={() => setIsBookmarksOpen(true)}
@@ -213,6 +223,14 @@ export function App() {
         </main>
       </div>
 
+      {/* Infinite Vocabulary / Custom Sentence Modal */}
+      <CustomSentenceModal
+        isOpen={isCustomModalOpen}
+        onClose={() => setIsCustomModalOpen(false)}
+        onApplyLesson={handleSelectLesson}
+        coachingLang={coachingLang}
+      />
+
       {/* Revision Bookmarks Drawer Modal */}
       <BookmarksModal
         isOpen={isBookmarksOpen}
@@ -227,7 +245,7 @@ export function App() {
       {/* School Workbook Subtle Footer */}
       <footer className="w-full max-w-4xl mx-auto px-4 py-6 text-center text-xs text-ink-500 border-t border-paper-300/80">
         <p className="font-medium">
-          BolkarPadho (बोल कर पढ़ो) • Supporting <strong>all 11 languages</strong> in Gnani.ai Vachana Voice AI (English, हिन्दी, தமிழ், తెలుగు, ಕನ್ನಡ, മലയാളം, मराठी, বাংলা, ગુજરાતી, ਪੰਜਾਬੀ, ଓଡ଼ିଆ).
+          BolkarPadho (बोल कर पढ़ो) • Supporting <strong>infinite sentences</strong> & <strong>all 11 languages</strong> in Gnani.ai Vachana Voice AI.
         </p>
         <p className="mt-1 text-[11px] text-ink-400">
           Designed for Indian classrooms • No sign-in required • Audio recordings stored purely in-memory

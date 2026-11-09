@@ -58,8 +58,11 @@ app.post('/api/gnani/tts', async (req, res) => {
     return res.status(400).json({ error: 'Text is required' });
   }
 
+  // Gnani Timbre v3.0 requires speed to be between 0.85 and 1.15
+  const clampedSpeed = Math.min(1.15, Math.max(0.85, Number(speed) || 1.0));
+
   // Check cache first
-  const cacheKey = `${text.trim().toLowerCase()}_${language}_${voice}`;
+  const cacheKey = `${text.trim().toLowerCase()}_${language}_${voice}_${clampedSpeed}`;
   if (ttsCache.has(cacheKey)) {
     const cached = ttsCache.get(cacheKey)!;
     res.setHeader('Content-Type', cached.contentType);
@@ -86,7 +89,7 @@ app.post('/api/gnani/tts', async (req, res) => {
         voice,
         model: 'timbre-v3.0',
         language,
-        speed: speed || 1.0,
+        speed: clampedSpeed,
         audio_config: {
           container: 'wav',
           encoding: 'linear_pcm'

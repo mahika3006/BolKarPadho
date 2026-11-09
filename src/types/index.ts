@@ -11,6 +11,8 @@ export type CoachingLanguage =
   | 'pa' 
   | 'or';
 
+export type AccuracyTier = 'spot-on' | 'very-close' | 'getting-there' | 'practice';
+
 export interface TrickyWordCoaching {
   word: string;
   displayWord: string;
@@ -34,6 +36,8 @@ export interface Lesson {
   targetWords: string[];
   context: string;
   contextHi?: string;
+  isCustom?: boolean;
+  category?: string;
   clinic: TrickyWordCoaching;
 }
 
@@ -43,13 +47,16 @@ export interface AlignedWord {
   targetWord?: string;
   spokenWord?: string;
   status: AlignmentStatus;
+  similarity?: number;
   index: number;
 }
 
 export interface AlignmentResult {
   isExactMatch: boolean;
+  score: number; // 0 - 100% nearness score
+  accuracyTier: AccuracyTier;
   alignedWords: AlignedWord[];
-  mismatchedWords: { target: string; spoken: string }[];
+  mismatchedWords: { target: string; spoken: string; similarity?: number }[];
   missingWords: string[];
   extraWords: string[];
   suggestedPracticeWord: string | null;

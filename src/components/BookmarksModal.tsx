@@ -36,6 +36,7 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
       word,
       langCode,
       'Shivani',
+      1.0,
       () => setPlayingWord(word),
       () => setPlayingWord(null)
     );
