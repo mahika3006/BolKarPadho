@@ -16,7 +16,7 @@ export const DemoToolbar: React.FC<DemoToolbarProps> = ({
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   return (
-    <aside 
+    <aside
       className="w-full max-w-4xl mx-auto px-4 sm:px-6 mt-4 mb-8"
       aria-label="Demo Testing Controls"
     >
@@ -95,3 +95,4 @@ export const DemoToolbar: React.FC<DemoToolbarProps> = ({
     </aside>
   );
 };
+

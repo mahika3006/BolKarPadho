@@ -40,14 +40,14 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        try { mediaRecorderRef.current.stop(); } catch (_) {}
+        try { mediaRecorderRef.current.stop(); } catch (_) { }
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
       }
       if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch (_) {}
+        try { recognitionRef.current.stop(); } catch (_) { }
       }
     };
   }, []);
@@ -104,8 +104,8 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       const mimeType = MediaRecorder.isTypeSupported('audio/webm')
         ? 'audio/webm'
         : MediaRecorder.isTypeSupported('audio/mp4')
-        ? 'audio/mp4'
-        : 'audio/wav';
+          ? 'audio/mp4'
+          : 'audio/wav';
 
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
@@ -147,7 +147,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
-      } catch (_) {}
+      } catch (_) { }
       recognitionRef.current = null;
     }
 
@@ -246,3 +246,4 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     setSimulatedTranscript
   };
 }
+

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Lesson, CoachingLanguage, AlignmentResult, AudioRecording } from '../types';
+import { UI_TRANSLATIONS, GNANI_LANGUAGES } from '../data/translations';
 import { cleanWord } from '../utils/alignment';
 import { speakText, stopAllSpeech } from '../services/speech';
 import { 
@@ -10,11 +11,10 @@ import {
   BookmarkCheck, 
   ArrowRight, 
   Play, 
-  Square,
-  HelpCircle,
   Lightbulb,
   Layers,
-  SplitSquareVertical
+  SplitSquareVertical,
+  Globe
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -50,6 +50,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
 
   if (!isOpen) return null;
 
+  const strings = UI_TRANSLATIONS[coachingLang] || UI_TRANSLATIONS.en;
   const clinic = lesson.clinic;
   const isMatch = alignment?.isExactMatch;
 
@@ -96,6 +97,12 @@ export const WordClinic: React.FC<WordClinicProps> = ({
 
   const heardWord = substitutedPair ? cleanWord(substitutedPair.spoken) : null;
 
+  // Selected language's native explanation
+  const currentLangMeta = GNANI_LANGUAGES.find(l => l.code === coachingLang);
+  const localizedExplanation = 
+    clinic.explanations?.[coachingLang] || 
+    (coachingLang === 'hi' ? clinic.explanationHi : clinic.explanationEn);
+
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 mb-12">
       <section 
@@ -116,11 +123,12 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                 <span className="text-xs px-2 py-0.5 rounded-full bg-tealbrand-100 text-tealbrand-800 font-bold border border-tealbrand-300">
                   {clinic.word}
                 </span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-paper-200 text-ink-700 font-semibold hidden sm:inline">
+                  {clinic.focusSound}
+                </span>
               </div>
               <p className="text-xs text-ink-600 font-medium">
-                {coachingLang === 'hi'
-                  ? 'ध्वनि अंतर पहचानें और आत्मविश्वास से बोलें'
-                  : 'Targeted coaching to master tricky sounds without judgement'}
+                {strings.mismatchAdvice}
               </p>
             </div>
           </div>
@@ -137,12 +145,12 @@ export const WordClinic: React.FC<WordClinicProps> = ({
             {isBookmarked ? (
               <>
                 <BookmarkCheck className="w-4 h-4 text-amber-600 fill-amber-500" />
-                <span>{coachingLang === 'hi' ? 'सहेजा गया' : 'Bookmarked'}</span>
+                <span>{strings.bookmarked}</span>
               </>
             ) : (
               <>
                 <Bookmark className="w-4 h-4 text-ink-500" />
-                <span>{coachingLang === 'hi' ? 'रिवीजन के लिए सहेजें' : 'Save word'}</span>
+                <span>{strings.saveWord}</span>
               </>
             )}
           </button>
@@ -153,12 +161,12 @@ export const WordClinic: React.FC<WordClinicProps> = ({
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-bold uppercase tracking-wider text-ink-500 flex items-center gap-1.5">
               <span>🎧</span>
-              <span>{coachingLang === 'hi' ? 'मैंने क्या सुना (What I heard):' : 'What I heard:'}</span>
+              <span>{strings.whatIHeard}</span>
             </span>
             {isMatch && (
               <span className="inline-flex items-center gap-1 text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-300">
                 <CheckCircle2 className="w-3.5 h-3.5" />
-                {coachingLang === 'hi' ? 'बिल्कुल सही!' : 'All words matched'}
+                {strings.allWordsMatched}
               </span>
             )}
           </div>
@@ -206,27 +214,23 @@ export const WordClinic: React.FC<WordClinicProps> = ({
             </div>
           ) : (
             <p className="text-sm text-ink-600 italic">
-              {coachingLang === 'hi'
-                ? 'अभी तक कोई रिकॉर्डिंग नहीं हुई है। आप नीचे दिए गए कोचिंग टूल्स से पहले अभ्यास कर सकते हैं।'
-                : 'No recording yet. You can inspect the coaching tools below before speaking.'}
+              No recording yet. You can inspect the coaching tools below before speaking.
             </p>
           )}
 
-          {/* Friendly Guidance Text */}
+          {/* Guidance Banner */}
           <div className="mt-3 text-sm">
             {isMatch ? (
               <div className="flex items-center justify-between flex-wrap gap-2 text-emerald-800 font-semibold bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
                 <span>
-                  🎉 {coachingLang === 'hi' 
-                    ? 'सभी शब्द सही मिले! अपनी रिकॉर्डिंग दोबारा सुनें या अगला पाठ शुरू करें।' 
-                    : 'All words matched. Listen back or try the next sentence.'}
+                  🎉 {strings.allWordsMatched}
                 </span>
                 {onNextLesson && (
                   <button
                     onClick={onNextLesson}
                     className="btn-tactile-teal text-xs px-3 py-1 rounded-lg flex items-center gap-1 shadow-sm font-bold"
                   >
-                    <span>{coachingLang === 'hi' ? 'अगला वाक्य' : 'Next sentence'}</span>
+                    <span>{strings.nextSentence}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 )}
@@ -238,16 +242,12 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                   “I heard ‘{heardWord}’. Let’s practise ‘{clinic.word}’.”
                 </strong>
                 <p className="text-xs text-ink-600 mt-1">
-                  {coachingLang === 'hi'
-                    ? 'अक्षर का न मिलना अभ्यास का संकेत है। यह कोई परीक्षा नहीं, सीखने का सहज अवसर है।'
-                    : 'A transcript mismatch is a clue for practice, not a test score. Let’s train your tongue gently.'}
+                  {strings.mismatchAdvice}
                 </p>
               </div>
             ) : (
               <p className="text-xs text-ink-500">
-                {coachingLang === 'hi'
-                  ? 'सुझाव: एक बार "बोल कर पढ़ें" दबाकर अपनी आवाज़ रिकॉर्ड करें।'
-                  : 'Friendly tip: Tap "Read aloud" to compare your pronunciation.'}
+                Friendly tip: Tap "Read aloud" to record and compare your pronunciation.
               </p>
             )}
           </div>
@@ -258,7 +258,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
           <div className="flex items-center gap-2 mb-3">
             <Volume2 className="w-4 h-4 text-tealbrand-600" />
             <h3 className="text-sm font-bold uppercase tracking-wider text-ink-800">
-              {coachingLang === 'hi' ? 'अंतर सुनें (Hear the difference)' : 'Hear the difference'}
+              {strings.hearDifference}
             </h3>
           </div>
 
@@ -278,7 +278,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
               <div className="flex items-start justify-between">
                 <div>
                   <span className="text-xs font-bold text-ink-500 uppercase">
-                    {coachingLang === 'hi' ? 'सामान्य भ्रम' : 'Common variant'}
+                    {strings.commonVariant}
                   </span>
                   <div className="text-2xl font-black text-ink-900 mt-0.5">
                     "{clinic.contrastingWord}"
@@ -292,7 +292,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                 </div>
               </div>
               <p className="text-xs text-ink-600 mt-2 font-medium">
-                {coachingLang === 'hi' ? 'जीभ तालू पर लगती है (T sound)' : 'Tongue taps the roof of the mouth'}
+                Tongue taps roof of the mouth
               </p>
             </button>
 
@@ -311,7 +311,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
               <div className="flex items-start justify-between">
                 <div>
                   <span className="text-xs font-bold text-tealbrand-700 uppercase">
-                    {coachingLang === 'hi' ? 'लक्ष्य उच्चारण' : 'Target word'}
+                    {strings.targetWord}
                   </span>
                   <div className="text-2xl font-black text-tealbrand-900 mt-0.5">
                     "{clinic.displayWord}"
@@ -325,20 +325,20 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                 </div>
               </div>
               <p className="text-xs text-tealbrand-800 mt-2 font-medium">
-                {coachingLang === 'hi' ? 'जीभ दाँतों के बीच हल्की बाहर आती है' : 'Soft air slips through teeth'}
+                Soft air slips through teeth
               </p>
             </button>
           </div>
         </div>
 
-        {/* 3. TRY THIS & HINDI EXPLANATION */}
+        {/* 3. TRY THIS & NATIVE MOTHER TONGUE EXPLANATION */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           {/* Try This (English Coaching) */}
           <div className="p-4 rounded-2xl bg-white border-2 border-paper-200">
             <div className="flex items-center gap-2 mb-2">
               <Lightbulb className="w-4 h-4 text-amber-500" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-ink-800">
-                Try this
+                {strings.tryThis}
               </h4>
             </div>
             <p className="text-sm text-ink-800 leading-relaxed font-medium">
@@ -346,16 +346,21 @@ export const WordClinic: React.FC<WordClinicProps> = ({
             </p>
           </div>
 
-          {/* हिंदी में समझें (Hindi Coaching) */}
-          <div className="p-4 rounded-2xl bg-white border-2 border-paper-200">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-sm">🇮🇳</span>
-              <h4 className="text-xs font-bold uppercase tracking-wider text-ink-800">
-                हिंदी में समझें
-              </h4>
+          {/* Understand in your Mother Tongue (Supports all 11 Indian languages!) */}
+          <div className="p-4 rounded-2xl bg-tealbrand-50/40 border-2 border-tealbrand-200">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-tealbrand-600" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-tealbrand-900">
+                  {strings.inYourLanguage} ({currentLangMeta?.nativeName || 'हिन्दी'})
+                </h4>
+              </div>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-tealbrand-100 text-tealbrand-800">
+                {currentLangMeta?.name.split(' ')[0]}
+              </span>
             </div>
-            <p className="text-sm text-ink-800 leading-relaxed font-medium">
-              “{clinic.explanationHi}”
+            <p className="text-sm text-ink-900 leading-relaxed font-medium">
+              “{localizedExplanation}”
             </p>
           </div>
         </div>
@@ -366,11 +371,11 @@ export const WordClinic: React.FC<WordClinicProps> = ({
             <div className="flex items-center gap-2">
               <Layers className="w-4 h-4 text-tealbrand-600" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-ink-800">
-                {coachingLang === 'hi' ? 'कदम-दर-कदम अभ्यास (Build it up)' : 'Build it up'}
+                {strings.buildItUp}
               </h3>
             </div>
             <span className="text-xs text-ink-500 font-medium">
-              {coachingLang === 'hi' ? 'छोटे से बड़े वाक्य की ओर बढ़ें' : 'Word → Phrase → Full Sentence'}
+              {strings.buildItUpSubtitle}
             </span>
           </div>
 
@@ -401,7 +406,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                     aria-label={`Listen to phrase: ${phrase}`}
                   >
                     <Volume2 className={`w-3.5 h-3.5 ${isPlaying ? 'animate-bounce' : ''}`} />
-                    <span>{isPlaying ? '...' : (coachingLang === 'hi' ? 'सुनें' : 'Hear')}</span>
+                    <span>{isPlaying ? '...' : strings.hearSentence.split(' ')[0]}</span>
                   </button>
                 </div>
               );
@@ -414,7 +419,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
           <div className="flex items-center gap-2 mb-3">
             <SplitSquareVertical className="w-4 h-4 text-tealbrand-600" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-ink-800">
-              {coachingLang === 'hi' ? 'प्रयासों की तुलना करें (Compare my attempts)' : 'Compare my attempts'}
+              {strings.compareAttempts}
             </h3>
           </div>
 
@@ -424,7 +429,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
               <div className="p-3.5 rounded-xl bg-white border border-paper-300 flex flex-col justify-between">
                 <div>
                   <span className="text-xs font-bold text-ink-500 uppercase">
-                    {coachingLang === 'hi' ? 'पहला प्रयास' : 'First attempt'}
+                    {strings.firstAttempt}
                   </span>
                   <div className="text-xs text-ink-600 mt-0.5">
                     ⏱️ {(firstRecording.durationMs / 1000).toFixed(1)}s
@@ -439,9 +444,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                 >
                   <Play className={`w-3.5 h-3.5 fill-ink-700 text-ink-700 ${playingAttempt === 'first' ? 'animate-ping' : ''}`} />
                   <span>
-                    {playingAttempt === 'first' 
-                      ? (coachingLang === 'hi' ? 'बज रहा है...' : 'Playing...') 
-                      : (coachingLang === 'hi' ? 'पहला प्रयास सुनें' : 'Play first attempt')}
+                    {playingAttempt === 'first' ? strings.playing : strings.playFirst}
                   </span>
                 </button>
               </div>
@@ -451,7 +454,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-tealbrand-700 uppercase">
-                      {coachingLang === 'hi' ? 'नवीनतम प्रयास' : 'Latest attempt'}
+                      {strings.latestAttempt}
                     </span>
                     {latestRecording && latestRecording.id !== firstRecording.id && (
                       <span className="text-[10px] font-extrabold px-1.5 py-0.5 bg-tealbrand-100 text-tealbrand-800 rounded">
@@ -472,18 +475,14 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                 >
                   <Play className={`w-3.5 h-3.5 fill-white text-white ${playingAttempt === 'latest' ? 'animate-ping' : ''}`} />
                   <span>
-                    {playingAttempt === 'latest' 
-                      ? (coachingLang === 'hi' ? 'बज रहा है...' : 'Playing...') 
-                      : (coachingLang === 'hi' ? 'नवीनतम प्रयास सुनें' : 'Play latest attempt')}
+                    {playingAttempt === 'latest' ? strings.playing : strings.playLatest}
                   </span>
                 </button>
               </div>
             </div>
           ) : (
             <div className="text-center py-6 text-sm text-ink-500 italic bg-white rounded-xl border border-dashed border-paper-300">
-              {coachingLang === 'hi'
-                ? 'तुलना करने के लिए ऊपर "बोल कर पढ़ें" दबाकर कम से कम एक बार वाक्य बोलें।'
-                : 'Record at least once using "Read aloud" above to listen and compare your improvements.'}
+              Record at least once using "Read aloud" above to listen and compare your improvements.
             </div>
           )}
         </div>

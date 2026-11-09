@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { LESSONS } from './data/lessons';
 import { Lesson, CoachingLanguage, GnaniStatus } from './types';
-import { alignTranscripts, cleanWord } from './utils/alignment';
+import { alignTranscripts } from './utils/alignment';
 import { checkGnaniStatus } from './services/speech';
 import { useAudioRecorder } from './hooks/useAudioRecorder';
 import { Header } from './components/Header';
@@ -10,14 +10,18 @@ import { WordClinic } from './components/WordClinic';
 import { BookmarksModal } from './components/BookmarksModal';
 import { DemoToolbar } from './components/DemoToolbar';
 
+const VALID_COACHING_LANGS: CoachingLanguage[] = [
+  'en', 'hi', 'ta', 'te', 'kn', 'ml', 'mr', 'bn', 'gu', 'pa', 'or'
+];
+
 export function App() {
   // Lessons
   const [currentLesson, setCurrentLesson] = useState<Lesson>(LESSONS[0]);
   
-  // Coaching language (English or Hindi)
+  // Coaching language (ALL 11 Gnani Indian languages supported)
   const [coachingLang, setCoachingLang] = useState<CoachingLanguage>(() => {
-    const saved = localStorage.getItem('bolkar_coaching_lang');
-    return (saved === 'hi' || saved === 'en') ? saved : 'en';
+    const saved = localStorage.getItem('bolkar_coaching_lang') as CoachingLanguage;
+    return (saved && VALID_COACHING_LANGS.includes(saved)) ? saved : 'en';
   });
 
   // Bookmarked tricky words
@@ -48,7 +52,7 @@ export function App() {
   const [gnaniStatus, setGnaniStatus] = useState<GnaniStatus>({
     online: true,
     gnaniConfigured: true,
-    provider: 'Checking Gnani Timbre & Prisma...',
+    provider: 'Checking Gnani Timbre & Prisma (11 Languages)...',
     supportedLanguages: [],
     defaultVoice: 'Shivani'
   });
@@ -105,7 +109,7 @@ export function App() {
 
   // Open clinic when an attempt completes
   const handleStopRecording = async () => {
-    const result = await stopRecording();
+    await stopRecording();
     setIsClinicOpen(true);
     // Smooth scroll to clinic after recording
     setTimeout(() => {
@@ -118,7 +122,7 @@ export function App() {
   };
 
   // Open clinic manually by tapping underlined practice word
-  const handleOpenClinic = (word: string) => {
+  const handleOpenClinic = () => {
     setIsClinicOpen(true);
     setTimeout(() => {
       clinicRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -223,10 +227,10 @@ export function App() {
       {/* School Workbook Subtle Footer */}
       <footer className="w-full max-w-4xl mx-auto px-4 py-6 text-center text-xs text-ink-500 border-t border-paper-300/80">
         <p className="font-medium">
-          BolkarPadho (बोल कर पढ़ो) • Powered by <strong>Gnani.ai Vachana Voice AI</strong> & Web Speech API.
+          BolkarPadho (बोल कर पढ़ो) • Supporting <strong>all 11 languages</strong> in Gnani.ai Vachana Voice AI (English, हिन्दी, தமிழ், తెలుగు, ಕನ್ನಡ, മലയാളം, मराठी, বাংলা, ગુજરાતી, ਪੰਜਾਬੀ, ଓଡ଼ିଆ).
         </p>
         <p className="mt-1 text-[11px] text-ink-400">
-          Designed for Indian school classrooms • No login required • Audio stays strictly in browser memory
+          Designed for Indian classrooms • No sign-in required • Audio recordings stored purely in-memory
         </p>
       </footer>
     </div>

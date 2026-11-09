@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Lesson, CoachingLanguage, AudioRecording } from '../types';
+import { UI_TRANSLATIONS } from '../data/translations';
 import { cleanWord } from '../utils/alignment';
-import { Volume2, Mic, Square, Play, RotateCcw, Sparkles, AlertCircle } from 'lucide-react';
+import { Volume2, Mic, Square, Play, RotateCcw, AlertCircle } from 'lucide-react';
 import { speakText, stopAllSpeech } from '../services/speech';
 
 interface SentenceReaderProps {
@@ -32,6 +33,8 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
   const [isPlayingSentence, setIsPlayingSentence] = useState<boolean>(false);
   const [isPlayingRecorded, setIsPlayingRecorded] = useState<boolean>(false);
+
+  const strings = UI_TRANSLATIONS[coachingLang] || UI_TRANSLATIONS.en;
 
   // Play full sentence
   const handlePlaySentence = async () => {
@@ -101,13 +104,11 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-paper-200">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase font-bold tracking-wider text-tealbrand-700 bg-tealbrand-50 px-2.5 py-1 rounded-md border border-tealbrand-500/20">
-              {lesson.languageName} • {lesson.context}
+              {lesson.nativeName} ({lesson.languageName}) • {lesson.context}
             </span>
           </div>
           <div className="text-xs text-ink-600 font-medium">
-            {coachingLang === 'hi'
-              ? '💡 किसी भी शब्द को सुनने के लिए उस पर टैप करें'
-              : '💡 Tap any word to hear it clearly'}
+            {strings.tapToHear}
           </div>
         </div>
 
@@ -140,7 +141,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                   {/* Gentle hover tip on tricky word */}
                   {isTricky && (
                     <span className="hidden sm:block absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-ink-800 text-white text-[11px] font-semibold px-2 py-0.5 rounded shadow pointer-events-none whitespace-nowrap">
-                      {coachingLang === 'hi' ? 'अभ्यास शब्द' : 'Tricky word'}
+                      {strings.targetWord}
                     </span>
                   )}
                 </button>
@@ -148,17 +149,9 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
             })}
           </div>
 
-          {/* Coaching Instruction Prompt */}
+          {/* Coaching Instruction Prompt in Selected Language */}
           <p className="mt-6 text-sm sm:text-base text-ink-700 font-medium max-w-xl mx-auto">
-            {coachingLang === 'hi' ? (
-              <span>
-                वाक्य को ध्यान से सुनें, फिर <strong>"बोल कर पढ़ें"</strong> दबाकर आत्मविश्वास से दोहराएं।
-              </span>
-            ) : (
-              <span>
-                Listen to the teacher, then tap <strong>"Read aloud"</strong> to speak into your microphone.
-              </span>
-            )}
+            {strings.practiceInstruction}
           </p>
         </div>
 
@@ -169,9 +162,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
             <div>
               <p className="font-semibold">{recordingError}</p>
               <p className="text-xs text-amber-800 mt-1">
-                {coachingLang === 'hi'
-                  ? 'सुझाव: आप नीचे दिए गए टेस्ट बटनों से भी तुरंत जांच कर सकते हैं।'
-                  : 'Tip: You can also use the demo simulator buttons below to test without microphone.'}
+                Tip: You can also use the evaluation toolbar below to test transcription scenarios.
               </p>
             </div>
           </div>
@@ -191,9 +182,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
               >
                 <Volume2 className={`w-5 h-5 text-tealbrand-600 ${isPlayingSentence ? 'animate-bounce' : ''}`} />
                 <span>
-                  {isPlayingSentence 
-                    ? (coachingLang === 'hi' ? 'बोल रहे हैं...' : 'Speaking...') 
-                    : (coachingLang === 'hi' ? 'वाक्य सुनें' : 'Hear sentence')}
+                  {isPlayingSentence ? strings.speaking : strings.hearSentence}
                 </span>
               </button>
 
@@ -208,7 +197,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                   <Mic className="w-6 h-6 text-white" />
                 </div>
                 <span>
-                  {coachingLang === 'hi' ? 'बोल कर पढ़ें' : 'Read aloud'}
+                  {strings.readAloud}
                 </span>
               </button>
 
@@ -224,9 +213,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                   >
                     <Play className={`w-4 h-4 fill-tealbrand-600 text-tealbrand-600 ${isPlayingRecorded ? 'animate-pulse' : ''}`} />
                     <span>
-                      {isPlayingRecorded
-                        ? (coachingLang === 'hi' ? 'बज रहा है...' : 'Playing...')
-                        : (coachingLang === 'hi' ? 'मेरी आवाज़ सुनें' : 'Play my voice')}
+                      {isPlayingRecorded ? strings.playing : strings.playMyVoice}
                     </span>
                   </button>
 
@@ -261,7 +248,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                   </span>
                 </div>
                 <p className="text-sm font-semibold text-tealbrand-800 mt-1">
-                  {coachingLang === 'hi' ? 'हम आपकी आवाज़ सुन रहे हैं...' : 'Listening to your voice... Speak clearly'}
+                  {strings.listening}
                 </p>
               </div>
 
@@ -274,7 +261,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
               >
                 <Square className="w-5 h-5 fill-white" />
                 <span>
-                  {coachingLang === 'hi' ? 'रोकें (Stop)' : 'Stop reading'}
+                  {strings.stopReading}
                 </span>
               </button>
             </div>

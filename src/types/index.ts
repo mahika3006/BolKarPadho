@@ -1,4 +1,15 @@
-export type CoachingLanguage = 'en' | 'hi';
+export type CoachingLanguage = 
+  | 'en' 
+  | 'hi' 
+  | 'ta' 
+  | 'te' 
+  | 'kn' 
+  | 'ml' 
+  | 'mr' 
+  | 'bn' 
+  | 'gu' 
+  | 'pa' 
+  | 'or';
 
 export interface TrickyWordCoaching {
   word: string;
@@ -9,18 +20,20 @@ export interface TrickyWordCoaching {
   contrastingPhonetic: string;
   explanationEn: string;
   explanationHi: string;
+  explanations?: Partial<Record<CoachingLanguage, string>>;
   buildUpPhrases: string[];
 }
 
 export interface Lesson {
   id: string;
-  languageCode: string; // e.g. 'en-IN', 'hi-IN', etc.
+  languageCode: string; // e.g. 'en-IN', 'hi-IN', 'ta-IN', etc.
   languageName: string;
+  nativeName: string;
   sentence: string;
   trickyWord: string;
   targetWords: string[];
   context: string;
-  contextHi: string;
+  contextHi?: string;
   clinic: TrickyWordCoaching;
 }
 

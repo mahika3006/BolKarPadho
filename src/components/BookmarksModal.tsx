@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CoachingLanguage, Lesson } from '../types';
+import { UI_TRANSLATIONS } from '../data/translations';
 import { Bookmark, Volume2, X, Trash2, ArrowRight } from 'lucide-react';
 import { speakText, stopAllSpeech } from '../services/speech';
 
@@ -26,6 +27,8 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
 
   if (!isOpen) return null;
 
+  const strings = UI_TRANSLATIONS[coachingLang] || UI_TRANSLATIONS.en;
+
   const handlePlay = async (word: string, langCode: string = 'en-IN') => {
     stopAllSpeech();
     setPlayingWord(word);
@@ -51,7 +54,7 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
           <div className="flex items-center gap-2">
             <Bookmark className="w-5 h-5 text-amber-500 fill-amber-500" />
             <h3 id="bookmarks-title" className="text-lg font-black text-ink-900 font-workbook">
-              {coachingLang === 'hi' ? 'रिवीजन के लिए सहेजे गए शब्द' : 'Revision Notebook'}
+              {strings.revisionNotebook}
             </h3>
           </div>
           <button
@@ -67,9 +70,7 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
         {bookmarkedWords.length === 0 ? (
           <div className="py-8 text-center text-ink-500">
             <p className="text-sm font-medium">
-              {coachingLang === 'hi'
-                ? 'अभी तक कोई शब्द सहेजा नहीं गया है। Word Clinic में बुकमार्क बटन दबाकर कठिन शब्दों को यहां जोड़ें।'
-                : 'No bookmarked words yet. Tap "Save word" in Word Clinic to collect sounds you want to revise.'}
+              No bookmarked words yet. Tap "Save word" in Word Clinic to collect sounds you want to revise.
             </p>
           </div>
         ) : (
@@ -116,7 +117,7 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
                         className="btn-tactile-paper px-2.5 py-1 rounded-lg text-xs font-semibold text-tealbrand-700 flex items-center gap-1"
                         title="Open lesson for this word"
                       >
-                        <span>{coachingLang === 'hi' ? 'पाठ' : 'Lesson'}</span>
+                        <span>Lesson</span>
                         <ArrowRight className="w-3 h-3" />
                       </button>
                     )}
@@ -143,7 +144,7 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
             onClick={onClose}
             className="btn-tactile-teal px-4 py-2 rounded-xl text-xs font-bold text-white"
           >
-            {coachingLang === 'hi' ? 'बंद करें' : 'Close'}
+            Close
           </button>
         </div>
       </div>

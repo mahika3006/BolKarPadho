@@ -1,6 +1,7 @@
 import React from 'react';
 import { CoachingLanguage, GnaniStatus, Lesson } from '../types';
-import { Sparkles, Bookmark, Languages, Volume2, Globe } from 'lucide-react';
+import { GNANI_LANGUAGES, UI_TRANSLATIONS } from '../data/translations';
+import { Sparkles, Bookmark, Languages, Volume2, Globe, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
   coachingLang: CoachingLanguage;
@@ -23,6 +24,10 @@ export const Header: React.FC<HeaderProps> = ({
   bookmarkedWords,
   onOpenBookmarks
 }) => {
+  const strings = UI_TRANSLATIONS[coachingLang] || UI_TRANSLATIONS.en;
+  const englishLessons = allLessons.filter(l => l.languageCode === 'en-IN');
+  const regionalLessons = allLessons.filter(l => l.languageCode !== 'en-IN');
+
   return (
     <header className="w-full max-w-4xl mx-auto pt-4 pb-2 px-4 sm:px-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b-2 border-paper-300 pb-3">
@@ -41,53 +46,46 @@ export const Header: React.FC<HeaderProps> = ({
               </span>
             </div>
             <p className="text-xs text-ink-700 font-medium">
-              {coachingLang === 'hi' 
-                ? 'भारतीय विद्यार्थियों के लिए वास्तविक उच्चारण अभ्यास' 
-                : 'Voice-first pronunciation practice for Indian classrooms'}
+              {strings.appTagline}
             </p>
           </div>
         </div>
 
-        {/* Right Controls: Provider badge, Language switchers, Bookmarks */}
+        {/* Right Controls: Provider badge, ALL 11 Gnani Languages switcher, Bookmarks */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Gnani Voice AI Provider Indicator */}
           <div 
-            title={gnaniStatus.gnaniConfigured ? "Connected to Gnani Timbre & Prisma Voice AI" : "Using Web Speech Native API"}
+            title={gnaniStatus.gnaniConfigured ? "Connected to Gnani Timbre v3.0 & Prisma Voice AI (11 Languages)" : "Using Web Speech Native API"}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white border border-paper-300 shadow-sm text-ink-800"
           >
             <span className={`w-2 h-2 rounded-full ${gnaniStatus.gnaniConfigured ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
             <span className="hidden md:inline">
-              {gnaniStatus.gnaniConfigured ? 'Gnani Timbre AI' : 'Browser Web Speech'}
+              {gnaniStatus.gnaniConfigured ? 'Gnani Timbre AI (11 Langs)' : 'Browser Web Speech'}
             </span>
             <span className="md:hidden">
               {gnaniStatus.gnaniConfigured ? 'Gnani AI' : 'Web Speech'}
             </span>
           </div>
 
-          {/* Coaching Language Switch (English / Hindi) */}
-          <div className="flex items-center bg-white rounded-lg p-0.5 border-2 border-paper-300 shadow-sm text-xs font-semibold">
-            <button
-              onClick={() => onToggleCoachingLang('en')}
-              className={`px-2.5 py-1 rounded-md transition-all ${
-                coachingLang === 'en'
-                  ? 'bg-tealbrand-600 text-white font-bold shadow-xs'
-                  : 'text-ink-700 hover:text-ink-900'
-              }`}
-              aria-label="Switch coaching instructions to English"
+          {/* Coaching Language Switcher: ALL 11 GNANI LANGUAGES */}
+          <div className="flex items-center bg-white rounded-lg px-2 py-1 border-2 border-paper-300 shadow-sm text-xs font-semibold gap-1.5">
+            <Languages className="w-3.5 h-3.5 text-tealbrand-600" />
+            <label htmlFor="coaching-lang-select" className="text-ink-600 font-bold hidden sm:inline">
+              {strings.coachingLabel}
+            </label>
+            <select
+              id="coaching-lang-select"
+              value={coachingLang}
+              onChange={(e) => onToggleCoachingLang(e.target.value as CoachingLanguage)}
+              className="bg-transparent font-bold text-ink-900 cursor-pointer focus:outline-none"
+              aria-label="Select Coaching & Instruction Language from all 11 Gnani languages"
             >
-              English
-            </button>
-            <button
-              onClick={() => onToggleCoachingLang('hi')}
-              className={`px-2.5 py-1 rounded-md transition-all ${
-                coachingLang === 'hi'
-                  ? 'bg-tealbrand-600 text-white font-bold shadow-xs'
-                  : 'text-ink-700 hover:text-ink-900'
-              }`}
-              aria-label="निर्देश हिन्दी में बदलें"
-            >
-              हिंदी
-            </button>
+              {GNANI_LANGUAGES.map((lang) => (
+                <option key={lang.code} value={lang.code}>
+                  {lang.nativeName} ({lang.name.split(' ')[0]})
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Bookmarks Counter */}
@@ -102,29 +100,62 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Lesson Selector Ribbon */}
-      <div className="mt-3 flex items-center justify-between gap-2 overflow-x-auto pb-1 text-xs">
-        <div className="flex items-center gap-1 text-ink-600 font-semibold shrink-0">
-          <Globe className="w-3.5 h-3.5 text-tealbrand-600" />
-          <span>{coachingLang === 'hi' ? 'पाठ चुनें:' : 'Lessons:'}</span>
-        </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
-          {allLessons.map((lesson, idx) => {
+      {/* ALL GNANI LANGUAGES PRACTICE LESSONS RIBBON */}
+      <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+        {/* Core English Lessons */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          <span className="text-ink-600 font-bold shrink-0 flex items-center gap-1">
+            <span>📖</span>
+            <span>English:</span>
+          </span>
+          {englishLessons.map((lesson, idx) => {
             const isSelected = lesson.id === currentLesson.id;
             return (
               <button
                 key={lesson.id}
                 onClick={() => onSelectLesson(lesson)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all border ${
+                className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
                   isSelected
                     ? 'bg-ink-800 text-white border-ink-900 shadow-sm'
-                    : 'bg-white/80 hover:bg-white text-ink-700 border-paper-300'
+                    : 'bg-white hover:bg-paper-200 text-ink-700 border-paper-300'
                 }`}
               >
-                {idx + 1}. {lesson.languageCode === 'en-IN' ? `"${lesson.trickyWord}"` : lesson.languageName}
+                {idx + 1}. "{lesson.trickyWord}"
               </button>
             );
           })}
+        </div>
+
+        {/* All 10 Indian Regional Languages Selector */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-ink-600 font-semibold flex items-center gap-1">
+            <Globe className="w-3.5 h-3.5 text-tealbrand-600" />
+            <span className="font-bold">All 11 Gnani Languages:</span>
+          </span>
+          <select
+            value={currentLesson.id}
+            onChange={(e) => {
+              const selected = allLessons.find(l => l.id === e.target.value);
+              if (selected) onSelectLesson(selected);
+            }}
+            className="bg-white border-2 border-paper-300 rounded-lg px-2 py-1 text-xs font-bold text-ink-800 cursor-pointer shadow-xs focus:ring-2 focus:ring-tealbrand-500"
+            aria-label="Select from all Indian regional languages available in Gnani APIs"
+          >
+            <optgroup label="Classroom English (3 Lessons)">
+              {englishLessons.map(l => (
+                <option key={l.id} value={l.id}>
+                  English: "{l.trickyWord}"
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="All Gnani Regional Languages (10 Languages)">
+              {regionalLessons.map(l => (
+                <option key={l.id} value={l.id}>
+                  {l.nativeName} ({l.languageName}): "{l.trickyWord}"
+                </option>
+              ))}
+            </optgroup>
+          </select>
         </div>
       </div>
     </header>

@@ -89,3 +89,4 @@ Tests verified:
 | **00:35 - 00:45** | Highlight **Word Clinic** banner | *"Word Clinic displays: 'I heard tree. Let's practise three.' No fake percentage scores—just constructive, respectful guidance."* |
 | **00:45 - 00:55** | Click **"tree"** vs **"three"** in *Hear the difference*, read tongue placement tip, click ladder | *"Student compares both sounds, reads tongue placement in English or Hindi, and practices the 3-step phrase ladder."* |
 | **00:55 - 01:00** | Click **"Play first attempt"** vs **"Play latest attempt"** | *"Student plays their initial recording side-by-side with their improved second attempt, hearing their immediate progress within 60 seconds."* |
+

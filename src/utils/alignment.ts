@@ -155,3 +155,4 @@ export function alignTranscripts(targetSentence: string, spokenTranscript: strin
     suggestedPracticeWord
   };
 }
+
