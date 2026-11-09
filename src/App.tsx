@@ -17,7 +17,7 @@ const VALID_COACHING_LANGS: CoachingLanguage[] = [
 export function App() {
   // Lessons
   const [currentLesson, setCurrentLesson] = useState<Lesson>(LESSONS[0]);
-  
+
   // Coaching language (ALL 11 Gnani Indian languages supported)
   const [coachingLang, setCoachingLang] = useState<CoachingLanguage>(() => {
     const saved = localStorage.getItem('bolkar_coaching_lang') as CoachingLanguage;
@@ -131,7 +131,7 @@ export function App() {
 
   const handleToggleBookmark = (word: string) => {
     const lower = word.toLowerCase();
-    setBookmarkedWords(prev => 
+    setBookmarkedWords(prev =>
       prev.includes(lower) ? prev.filter(w => w !== lower) : [...prev, lower]
     );
   };

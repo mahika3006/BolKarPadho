@@ -43,7 +43,7 @@ export const BookmarksModal: React.FC<BookmarksModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-ink-950/40 backdrop-blur-xs flex items-center justify-center p-4">
-      <div 
+      <div
         className="workbook-card w-full max-w-lg bg-paper-50 p-6 relative shadow-2xl border-2 border-paper-300 animate-in fade-in zoom-in-95 duration-150"
         role="dialog"
         aria-modal="true"

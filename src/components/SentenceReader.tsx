@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lesson, CoachingLanguage, AudioRecording } from '../types';
 import { UI_TRANSLATIONS } from '../data/translations';
 import { cleanWord } from '../utils/alignment';
-import { Volume2, Mic, Square, Play, RotateCcw, AlertCircle } from 'lucide-react';
+import { Volume2, Mic, Square, Play, RotateCcw, AlertCircle, Gauge, User } from 'lucide-react';
 import { speakText, stopAllSpeech } from '../services/speech';
 
 interface SentenceReaderProps {
@@ -33,6 +33,8 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
   const [activeWordIndex, setActiveWordIndex] = useState<number | null>(null);
   const [isPlayingSentence, setIsPlayingSentence] = useState<boolean>(false);
   const [isPlayingRecorded, setIsPlayingRecorded] = useState<boolean>(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
+  const [selectedVoice, setSelectedVoice] = useState<string>('Shivani');
 
   const strings = UI_TRANSLATIONS[coachingLang] || UI_TRANSLATIONS.en;
 
@@ -43,7 +45,8 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
     await speakText(
       lesson.sentence,
       lesson.languageCode,
-      'Shivani',
+      selectedVoice,
+      playbackSpeed,
       () => setIsPlayingSentence(true),
       () => setIsPlayingSentence(false)
     );
@@ -63,7 +66,8 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
     await speakText(
       word,
       lesson.languageCode,
-      'Shivani',
+      selectedVoice,
+      playbackSpeed,
       () => setActiveWordIndex(index),
       () => setActiveWordIndex(null)
     );
@@ -100,15 +104,39 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
           <div className="w-3 h-3 rounded-full bg-paper-300 shadow-inner" />
         </div>
 
-        {/* Workbook Header Tag */}
-        <div className="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-paper-200">
+        {/* Workbook Header Tag & Audio Settings */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-4 border-b border-paper-200">
           <div className="flex items-center gap-2">
             <span className="text-xs uppercase font-bold tracking-wider text-tealbrand-700 bg-tealbrand-50 px-2.5 py-1 rounded-md border border-tealbrand-500/20">
               {lesson.nativeName} ({lesson.languageName}) • {lesson.context}
             </span>
           </div>
-          <div className="text-xs text-ink-600 font-medium">
-            {strings.tapToHear}
+
+          {/* Voice Controls: Speed (1.0x / 0.8x) & Voice (Shivani / Avinash) */}
+          <div className="flex items-center gap-2 text-xs">
+            {/* Speed toggle */}
+            <button
+              type="button"
+              onClick={() => setPlaybackSpeed(prev => prev === 1.0 ? 0.8 : 1.0)}
+              className={`px-2 py-1 rounded-md border font-bold flex items-center gap-1 transition-all ${
+                playbackSpeed === 0.8 
+                  ? 'bg-tealbrand-100 border-tealbrand-500 text-tealbrand-800' 
+                  : 'bg-white border-paper-300 text-ink-600 hover:bg-paper-100'
+              }`}
+              title="Toggle Slow Pronunciation Speed"
+            >
+              <span>{playbackSpeed === 0.8 ? '🐢 0.8x (Slow)' : '⚡ 1.0x'}</span>
+            </button>
+
+            {/* Voice toggle */}
+            <button
+              type="button"
+              onClick={() => setSelectedVoice(prev => prev === 'Shivani' ? 'Avinash' : 'Shivani')}
+              className="px-2 py-1 rounded-md border border-paper-300 bg-white font-bold text-ink-700 hover:bg-paper-100 transition-all flex items-center gap-1"
+              title="Switch between female and male Gnani teacher voices"
+            >
+              <span>{selectedVoice === 'Shivani' ? '👩 Shivani' : '👨 Avinash'}</span>
+            </button>
           </div>
         </div>
 

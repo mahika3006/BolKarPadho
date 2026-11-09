@@ -55,6 +55,7 @@ export async function speakText(
   text: string,
   languageCode: string = 'en-IN',
   voice: string = 'Shivani',
+  speed: number = 1.0,
   onStart?: () => void,
   onEnd?: () => void
 ): Promise<void> {
@@ -71,7 +72,7 @@ export async function speakText(
         text,
         language: languageCode,
         voice,
-        speed: 0.95
+        speed: speed || 1.0
       })
     });
 
@@ -90,7 +91,7 @@ export async function speakText(
       audio.onerror = () => {
         URL.revokeObjectURL(audioUrl);
         currentAudio = null;
-        fallbackBrowserTTS(text, languageCode, onEnd);
+        fallbackBrowserTTS(text, languageCode, speed, onEnd);
       };
 
       await audio.play();
@@ -101,13 +102,13 @@ export async function speakText(
   }
 
   // Fallback to browser speech synthesis
-  fallbackBrowserTTS(text, languageCode, onEnd);
+  fallbackBrowserTTS(text, languageCode, speed, onEnd);
 }
 
 /**
  * Browser Speech Synthesis fallback
  */
-function fallbackBrowserTTS(text: string, languageCode: string, onEnd?: () => void) {
+function fallbackBrowserTTS(text: string, languageCode: string, speed: number = 1.0, onEnd?: () => void) {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     console.warn('Speech synthesis not supported in this browser environment.');
     if (onEnd) onEnd();
@@ -117,7 +118,7 @@ function fallbackBrowserTTS(text: string, languageCode: string, onEnd?: () => vo
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = languageCode;
-  utterance.rate = 0.9; // Slightly slower for clear pronunciation instruction
+  utterance.rate = 0.9 * (speed || 1.0); // Slightly slower for clear pronunciation instruction
 
   // Pick suitable Indian voice if available in browser
   const voices = window.speechSynthesis.getVoices();
@@ -168,4 +169,3 @@ export async function transcribeWithGnani(audioBlob: Blob, languageCode: string 
   }
   return null;
 }
-

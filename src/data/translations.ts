@@ -421,3 +421,4 @@ export const UI_TRANSLATIONS: Record<CoachingLanguage, TranslationStrings> = {
     lessonsLabel: 'ପାଠ:'
   }
 };
+
