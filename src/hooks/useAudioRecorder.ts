@@ -5,6 +5,7 @@ import { stopAllSpeech, transcribeWithGnani } from '../services/speech';
 export interface UseAudioRecorderReturn {
   isRecording: boolean;
   recordingDuration: number;
+  audioLevel: number; // 0 to 100 for live reactive visualizer
   recordedAudio: AudioRecording | null;
   firstRecording: AudioRecording | null;
   latestRecording: AudioRecording | null;
@@ -20,6 +21,7 @@ export interface UseAudioRecorderReturn {
 export function useAudioRecorder(): UseAudioRecorderReturn {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [recordingDuration, setRecordingDuration] = useState<number>(0);
+  const [audioLevel, setAudioLevel] = useState<number>(0);
   const [recordedAudio, setRecordedAudio] = useState<AudioRecording | null>(null);
   const [firstRecording, setFirstRecording] = useState<AudioRecording | null>(null);
   const [latestRecording, setLatestRecording] = useState<AudioRecording | null>(null);
@@ -34,20 +36,28 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
   const startTimeRef = useRef<number>(0);
   const recognitionRef = useRef<any>(null);
   const speechRecognitionTranscriptRef = useRef<string>('');
+  const currentLangCodeRef = useRef<string>('en-IN');
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animFrameRef = useRef<number | null>(null);
 
   // Release microphone on component unmount
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (audioContextRef.current) {
+        try { audioContextRef.current.close(); } catch (_) {}
+      }
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        try { mediaRecorderRef.current.stop(); } catch (_) { }
+        try { mediaRecorderRef.current.stop(); } catch (_) {}
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
       }
       if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch (_) { }
+        try { recognitionRef.current.stop(); } catch (_) {}
       }
     };
   }, []);
@@ -59,6 +69,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     setTranscript('');
     audioChunksRef.current = [];
     speechRecognitionTranscriptRef.current = '';
+    currentLangCodeRef.current = languageCode;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -69,6 +80,37 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
         }
       });
       streamRef.current = stream;
+
+      // Web Audio API live analyzer for visual frequency meter
+      try {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) {
+          const audioCtx = new AudioCtx();
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 64;
+          analyser.smoothingTimeConstant = 0.5;
+          const source = audioCtx.createMediaStreamSource(stream);
+          source.connect(analyser);
+          audioContextRef.current = audioCtx;
+          analyserRef.current = analyser;
+
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+
+          const updateVolume = () => {
+            if (!analyserRef.current) return;
+            analyserRef.current.getByteFrequencyData(dataArray);
+            let sum = 0;
+            for (let i = 0; i < bufferLength; i++) {
+              sum += dataArray[i];
+            }
+            const avg = sum / bufferLength;
+            setAudioLevel(Math.min(100, Math.round((avg / 128) * 100)));
+            animFrameRef.current = requestAnimationFrame(updateVolume);
+          };
+          updateVolume();
+        }
+      } catch (_) {}
 
       // Initialize browser SpeechRecognition if supported
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -104,8 +146,8 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       const mimeType = MediaRecorder.isTypeSupported('audio/webm')
         ? 'audio/webm'
         : MediaRecorder.isTypeSupported('audio/mp4')
-          ? 'audio/mp4'
-          : 'audio/wav';
+        ? 'audio/mp4'
+        : 'audio/wav';
 
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
@@ -144,10 +186,21 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       timerRef.current = null;
     }
 
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      try { audioContextRef.current.close(); } catch (_) {}
+      audioContextRef.current = null;
+    }
+    setAudioLevel(0);
+
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
-      } catch (_) { }
+      } catch (_) {}
       recognitionRef.current = null;
     }
 
@@ -192,7 +245,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
         // If Web Speech didn't catch transcript, attempt Gnani STT on the recorded blob
         if (!speechRecognitionTranscriptRef.current.trim()) {
           setIsTranscribing(true);
-          const gnaniTranscript = await transcribeWithGnani(audioBlob);
+          const gnaniTranscript = await transcribeWithGnani(audioBlob, currentLangCodeRef.current);
           setIsTranscribing(false);
           if (gnaniTranscript) {
             setTranscript(gnaniTranscript);
@@ -224,6 +277,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     setTranscript('');
     setError(null);
     setRecordingDuration(0);
+    setAudioLevel(0);
   }, [firstRecording, latestRecording]);
 
   const setSimulatedTranscript = useCallback((spokenText: string) => {
@@ -234,6 +288,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
   return {
     isRecording,
     recordingDuration,
+    audioLevel,
     recordedAudio,
     firstRecording,
     latestRecording,
@@ -246,4 +301,3 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
     setSimulatedTranscript
   };
 }
-

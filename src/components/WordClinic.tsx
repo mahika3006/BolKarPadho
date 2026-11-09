@@ -3,14 +3,14 @@ import { Lesson, CoachingLanguage, AlignmentResult, AudioRecording } from '../ty
 import { UI_TRANSLATIONS, GNANI_LANGUAGES } from '../data/translations';
 import { cleanWord } from '../utils/alignment';
 import { speakText, stopAllSpeech } from '../services/speech';
-import { 
-  Volume2, 
-  Sparkles, 
-  CheckCircle2, 
-  Bookmark, 
-  BookmarkCheck, 
-  ArrowRight, 
-  Play, 
+import {
+  Volume2,
+  Sparkles,
+  CheckCircle2,
+  Bookmark,
+  BookmarkCheck,
+  ArrowRight,
+  Play,
   Lightbulb,
   Layers,
   SplitSquareVertical,
@@ -66,7 +66,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
           spread: 60,
           origin: { y: 0.7 }
         });
-      } catch (_) {}
+      } catch (_) { }
     }
   }, [isMatch]);
 
@@ -103,8 +103,8 @@ export const WordClinic: React.FC<WordClinicProps> = ({
 
   // Selected language's native explanation
   const currentLangMeta = GNANI_LANGUAGES.find(l => l.code === coachingLang);
-  const localizedExplanation = 
-    clinic.explanations?.[coachingLang] || 
+  const localizedExplanation =
+    clinic.explanations?.[coachingLang] ||
     (coachingLang === 'hi' ? clinic.explanationHi : clinic.explanationEn);
 
   // Score tier color and label
@@ -145,7 +145,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
 
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 mb-12">
-      <section 
+      <section
         className="workbook-card p-6 sm:p-8 bg-paper-50 border-2 border-tealbrand-600/30 shadow-paper-lg relative"
         aria-label="Word Clinic Practice Section"
       >
@@ -177,9 +177,8 @@ export const WordClinic: React.FC<WordClinicProps> = ({
           <button
             type="button"
             onClick={() => onToggleBookmark(clinic.word)}
-            className={`btn-tactile-paper px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${
-              isBookmarked ? 'bg-amber-50 border-amber-400 text-amber-800' : ''
-            }`}
+            className={`btn-tactile-paper px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all ${isBookmarked ? 'bg-amber-50 border-amber-400 text-amber-800' : ''
+              }`}
             aria-label={isBookmarked ? `Word ${clinic.word} bookmarked` : `Bookmark ${clinic.word} for revision`}
           >
             {isBookmarked ? (
@@ -234,7 +233,7 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                     </span>
                   </div>
                   <p className="text-xs text-ink-600 mt-1 font-medium">
-                    {coachingLang === 'hi' 
+                    {coachingLang === 'hi'
                       ? 'यह स्कोर वास्तविक ध्वनि व अक्षरों की समीपता (Phonetic proximity) को दर्शाता है।'
                       : 'Shows how closely your spoken syllables and acoustic sequence matched the target sentence.'}
                   </p>
@@ -249,13 +248,12 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                   return (
                     <span
                       key={idx}
-                      className={`text-[11px] font-bold px-2 py-1 rounded-lg border flex items-center gap-1 ${
-                        w.status === 'matched'
+                      className={`text-[11px] font-bold px-2 py-1 rounded-lg border flex items-center gap-1 ${w.status === 'matched'
                           ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                           : isLow
-                          ? 'bg-amber-100 text-amber-900 border-amber-300'
-                          : 'bg-paper-100 text-ink-700 border-paper-300'
-                      }`}
+                            ? 'bg-amber-100 text-amber-900 border-amber-300'
+                            : 'bg-paper-100 text-ink-700 border-paper-300'
+                        }`}
                       title={w.spokenWord ? `Spoken: "${w.spokenWord}" (${simPct}% near)` : 'Word missed'}
                     >
                       <span>{w.targetWord || w.spokenWord}</span>
@@ -296,8 +294,8 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                 }
                 if (item.status === 'substituted') {
                   return (
-                    <span 
-                      key={idx} 
+                    <span
+                      key={idx}
                       className="inline-block bg-amber-100 text-amber-900 font-bold px-1.5 py-0.5 rounded-md border border-amber-300 mr-1.5 shadow-2xs"
                       title={`Expected "${item.targetWord}", recognizer transcribed "${item.spokenWord}"`}
                     >
@@ -307,8 +305,8 @@ export const WordClinic: React.FC<WordClinicProps> = ({
                 }
                 if (item.status === 'missed') {
                   return (
-                    <span 
-                      key={idx} 
+                    <span
+                      key={idx}
                       className="inline-block line-through text-ink-400 bg-paper-200 px-1 py-0.5 rounded mr-1.5 text-sm"
                       title={`Target word "${item.targetWord}" was not detected`}
                     >
@@ -380,11 +378,10 @@ export const WordClinic: React.FC<WordClinicProps> = ({
               type="button"
               onClick={() => handlePlayWord(clinic.contrastingWord, 'contrast')}
               disabled={playingItem !== null}
-              className={`p-4 rounded-2xl border-2 text-left transition-all relative ${
-                playingItem === 'contrast'
+              className={`p-4 rounded-2xl border-2 text-left transition-all relative ${playingItem === 'contrast'
                   ? 'bg-amber-100 border-amber-500 shadow-md scale-102'
                   : 'bg-white border-paper-300 hover:border-amber-400 hover:bg-amber-50/30'
-              }`}
+                }`}
               aria-label={`Listen to contrasting sound: ${clinic.contrastingWord}`}
             >
               <div className="flex items-start justify-between">
@@ -413,11 +410,10 @@ export const WordClinic: React.FC<WordClinicProps> = ({
               type="button"
               onClick={() => handlePlayWord(clinic.word, 'target')}
               disabled={playingItem !== null}
-              className={`p-4 rounded-2xl border-2 text-left transition-all relative ${
-                playingItem === 'target'
+              className={`p-4 rounded-2xl border-2 text-left transition-all relative ${playingItem === 'target'
                   ? 'bg-tealbrand-100 border-tealbrand-600 shadow-md scale-102'
                   : 'bg-tealbrand-50/40 border-tealbrand-300 hover:border-tealbrand-500 hover:bg-tealbrand-50'
-              }`}
+                }`}
               aria-label={`Listen to target sound: ${clinic.word}`}
             >
               <div className="flex items-start justify-between">

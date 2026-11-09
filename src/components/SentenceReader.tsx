@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Lesson, CoachingLanguage, AudioRecording } from '../types';
 import { UI_TRANSLATIONS } from '../data/translations';
 import { cleanWord } from '../utils/alignment';
-import { Volume2, Mic, Square, Play, RotateCcw, AlertCircle, Gauge, User } from 'lucide-react';
+import { Volume2, Mic, Square, Play, RotateCcw, AlertCircle } from 'lucide-react';
 import { speakText, stopAllSpeech } from '../services/speech';
 
 interface SentenceReaderProps {
@@ -10,6 +10,7 @@ interface SentenceReaderProps {
   coachingLang: CoachingLanguage;
   isRecording: boolean;
   recordingDuration: number;
+  audioLevel?: number;
   recordedAudio: AudioRecording | null;
   recordingError: string | null;
   onStartRecording: () => void;
@@ -23,6 +24,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
   coachingLang,
   isRecording,
   recordingDuration,
+  audioLevel = 0,
   recordedAudio,
   recordingError,
   onStartRecording,
@@ -93,7 +95,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
   return (
     <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 my-4">
       {/* Workbook Page Container */}
-      <section
+      <section 
         className="workbook-card p-6 sm:p-10 relative overflow-hidden transition-all"
         aria-label="Sentence Practice Card"
       >
@@ -118,10 +120,11 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
             <button
               type="button"
               onClick={() => setPlaybackSpeed(prev => prev === 1.0 ? 0.85 : 1.0)}
-              className={`px-2 py-1 rounded-md border font-bold flex items-center gap-1 transition-all ${playbackSpeed === 0.85
-                  ? 'bg-tealbrand-100 border-tealbrand-500 text-tealbrand-800'
+              className={`px-2 py-1 rounded-md border font-bold flex items-center gap-1 transition-all ${
+                playbackSpeed === 0.85 
+                  ? 'bg-tealbrand-100 border-tealbrand-500 text-tealbrand-800' 
                   : 'bg-white border-paper-300 text-ink-600 hover:bg-paper-100'
-                }`}
+              }`}
               title="Toggle Slow Pronunciation Speed"
             >
               <span>{playbackSpeed === 0.85 ? '🐢 0.85x (Slow)' : '⚡ 1.0x'}</span>
@@ -154,10 +157,11 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                   onClick={() => handleWordTap(word, idx)}
                   disabled={isRecording}
                   title={isTricky ? `Tricky practice word: "${word}". Click to hear or open Word Clinic.` : `Hear "${word}"`}
-                  className={`group relative inline-block transition-all transform duration-150 rounded-xl px-2 py-1 text-left focus:outline-none focus:ring-4 focus:ring-tealbrand-500/40 ${isActive
+                  className={`group relative inline-block transition-all transform duration-150 rounded-xl px-2 py-1 text-left focus:outline-none focus:ring-4 focus:ring-tealbrand-500/40 ${
+                    isActive
                       ? 'bg-tealbrand-100 text-tealbrand-800 scale-105 shadow-sm'
                       : 'hover:bg-paper-200 hover:text-tealbrand-700 active:scale-95'
-                    }`}
+                  }`}
                   aria-label={`Listen to word: ${word}`}
                 >
                   <span className={isTricky ? 'hand-drawn-underline text-tealbrand-800 font-black' : ''}>
@@ -256,7 +260,7 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
               )}
             </div>
           ) : (
-            /* ACTIVE LISTENING STATE */
+            /* ACTIVE LISTENING STATE WITH LIVE REACTIVE WAVEFORM */
             <div className="flex flex-col items-center justify-center py-4 bg-tealbrand-50/60 rounded-2xl border-2 border-tealbrand-300">
               <div className="relative flex items-center justify-center mb-3">
                 <span className="absolute w-20 h-20 rounded-full bg-tealbrand-500/20 mic-pulse-ring pointer-events-none" />
@@ -264,6 +268,20 @@ export const SentenceReader: React.FC<SentenceReaderProps> = ({
                 <div className="relative w-14 h-14 rounded-full bg-tealbrand-600 flex items-center justify-center text-white shadow-lg">
                   <Mic className="w-7 h-7 animate-pulse" />
                 </div>
+              </div>
+
+              {/* Live Reactive Audio Visualizer Frequency Bars */}
+              <div className="flex items-center justify-center gap-1.5 h-8 my-2">
+                {[0.6, 1.0, 1.4, 0.9, 1.3, 0.7, 1.1, 0.8].map((multiplier, i) => {
+                  const barHeight = Math.max(6, Math.min(32, Math.round(audioLevel * multiplier * 0.4)));
+                  return (
+                    <span
+                      key={i}
+                      className="w-1.5 bg-tealbrand-600 rounded-full transition-all duration-75"
+                      style={{ height: `${barHeight}px` }}
+                    />
+                  );
+                })}
               </div>
 
               <div className="text-center mb-4">

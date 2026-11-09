@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Right Controls: Provider badge, ALL 11 Gnani Languages switcher, Custom Infinite, Bookmarks */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Gnani Voice AI Provider Indicator */}
-          <div 
+          <div
             title={gnaniStatus.gnaniConfigured ? "Connected to Gnani Timbre v3.0 & Prisma Voice AI (11 Languages)" : "Using Web Speech Native API"}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-white border border-paper-300 shadow-sm text-ink-800"
           >
@@ -118,11 +118,10 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 key={lesson.id}
                 onClick={() => onSelectLesson(lesson)}
-                className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
-                  isSelected
+                className={`px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${isSelected
                     ? 'bg-ink-800 text-white border-ink-900 shadow-sm'
                     : 'bg-white hover:bg-paper-200 text-ink-700 border-paper-300'
-                }`}
+                  }`}
               >
                 {idx + 1}. "{lesson.trickyWord}"
               </button>
